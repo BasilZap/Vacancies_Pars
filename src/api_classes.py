@@ -25,6 +25,7 @@ class HeadHunterAPI(GetAPIAbstractClass):
     def __init__(self):
         self.api_data = ''
         self.required_vacation = ''
+        self.area = 113
 
     # Переопределение метода str, выводим имя родительского класса и запрос пользователя
     def __str__(self):
@@ -45,7 +46,7 @@ class HeadHunterAPI(GetAPIAbstractClass):
                 'text': vacation_name,
                 'host': 'hh.ru',
                 'locale': 'RU',
-                'area': 2,
+                'area': self.area,
                 'page': pages,
                 'per_page': 100
             }
@@ -61,6 +62,21 @@ class HeadHunterAPI(GetAPIAbstractClass):
     def save_vacancies_json_file(self) -> None:
         with open('hh_api.json', 'w', encoding="utf-8") as jsonfile:
             json.dump(self.api_data, jsonfile, ensure_ascii=False)
+
+    def find_area_id(self, area):
+        rec = requests.get("https://api.hh.ru/areas/113")
+        rec1 = json.loads(rec.content.decode())
+        # print(rec1)
+        my_str = area
+        for i in rec1['areas']:
+            if i['name'] == str(my_str):
+                self.area = i['id']
+                break
+            for y in i['areas']:
+                # print(y['name'])
+                if y['name'] == str(my_str):
+                    self.area = y['id']
+                    break
 
 
 class SuperJobAPI(GetAPIAbstractClass):
@@ -78,24 +94,14 @@ class SuperJobAPI(GetAPIAbstractClass):
 
 
 
-def get_city(my_city):
-    rec = requests.get("https://api.hh.ru/areas/113")
-    rec1 = json.loads(rec.content.decode())
-    #print(rec1)
-    my_str = my_city
-    for i in rec1['areas']:
-        if i['name'] == str(my_str):
-            return i['id']
-        for y in i['areas']:
-            #print(y['name'])
-            if y['name'] == str(my_str):
-                return y['id']
 
 
 
-print(get_city('Вологодская область'))
+
 
 ap1 = HeadHunterAPI()
+print(ap1.find_area_id('Вологда'))
+print(ap1.area)
 ap1.get_vacancies('python')
 #ap1.save_vacancies_json_file()
 #print(ap1)
