@@ -43,7 +43,9 @@ class HeadHunterAPI(GetAPIAbstractClass):
 
             params = {
                 'text': vacation_name,
-                'area': 113,
+                'host': 'hh.ru',
+                'locale': 'RU',
+                'area': 2,
                 'page': pages,
                 'per_page': 100
             }
@@ -54,7 +56,7 @@ class HeadHunterAPI(GetAPIAbstractClass):
                 break
             time.sleep(0.20)
         self.api_data = json_data_list
-        #print(self.api_data)
+        print(self.api_data)
 
     def save_vacancies_json_file(self) -> None:
         with open('hh_api.json', 'w', encoding="utf-8") as jsonfile:
@@ -76,8 +78,25 @@ class SuperJobAPI(GetAPIAbstractClass):
 
 
 
-#ap1 = HeadHunterAPI()
-#ap1.get_vacancies('python')
+def get_city(my_city):
+    rec = requests.get("https://api.hh.ru/areas/113")
+    rec1 = json.loads(rec.content.decode())
+    #print(rec1)
+    my_str = my_city
+    for i in rec1['areas']:
+        if i['name'] == str(my_str):
+            return i['id']
+        for y in i['areas']:
+            #print(y['name'])
+            if y['name'] == str(my_str):
+                return y['id']
+
+
+
+print(get_city('Вологодская область'))
+
+ap1 = HeadHunterAPI()
+ap1.get_vacancies('python')
 #ap1.save_vacancies_json_file()
 #print(ap1)
 
