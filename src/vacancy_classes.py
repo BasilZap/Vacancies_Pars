@@ -6,16 +6,18 @@
 
 class Vacancy:
 
-    __slots__ = ('__name', '__link', '__salary_from', '__salary_to', '__description', '__responsible', '__company')
+    __slots__ = ('__v_id', '__name', '__link', '__salary_from', '__salary_to', '__description',
+                 '__company', '__api')
 
-    def __init__(self, name, link, salary_from, salary_to, description, responsible, company):
+    def __init__(self, v_id, name, link, salary_from, salary_to, description, company, api):
+        self.__v_id = v_id
         self.__name = name
         self.__link = link
         self.__salary_from = salary_from
         self.__salary_to = salary_to
         self.__description = description
-        self.__responsible = responsible
         self.__company = company
+        self.__api = api
 
     def __repr__(self):
         """
@@ -26,17 +28,26 @@ class Vacancy:
         desc = self.__description
         if len(self.__description) > 25:
             desc = self.__description[:25] + '...'
-        resp = self.__responsible
-        if len(self.__responsible) > 25:
-            resp = self.__responsible[:25] + '...'
-        return f"name: {self.__name}, link: {self.__link}, " \
+
+        return f"id: {self.__v_id} name: {self.__name}, link: {self.__link}, " \
                f"salary: {self.__salary_from} - {self.__salary_to}, " \
-               f"description: {desc}, " \
-               f"responsibility: {resp}, company - {self.__company}"
+               f"description: {desc}, company - {self.__company}"
 
     def __str__(self):
         pay = str(self.__salary_from) + '-' + str(self.__salary_to)
         return f'Вакансия: {self.__name} с З/П: {pay} в организацию {self.__company}'
+
+    def __eq__(self, other) -> bool:
+
+        """
+               =
+               :param other:
+               :return:
+               """
+        if self.__salary_from == other.__salary_from:
+            return True
+        else:
+            return False
 
     def __lt__(self, other):
         """
@@ -83,8 +94,12 @@ class Vacancy:
             return False
         
 
-vac = Vacancy('Разраб', 'http:/1.ru', '1000', '100000', 'Оч хорошая, не напряжная такая, сойдет',
-              'Спать, главное при этом как можно больше работать', 'A&B')
+vac = Vacancy('123456', 'Разраб', 'http:/1.ru', '1000', '100000', 'Оч хорошая, не напряжная такая, сойдет',
+              'A&B', 'hh.ru')
+vac2 = Vacancy('123458', 'Разраб2', 'http:/1.ru', '1000', '10000', 'Оч хорошая, не напряжная такая, сойдет',
+               'A&B', 'hh.ru')
+
+#print(vac2 == vac)
 
 # print(vac)
-print(repr(vac))
+#print(repr(vac))
