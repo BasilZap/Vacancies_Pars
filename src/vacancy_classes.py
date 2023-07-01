@@ -38,6 +38,50 @@ class Vacancy:
         pay = str(self.__salary_from) + '-' + str(self.__salary_to)
         return f'Вакансия: {self.__name} с З/П: {pay} в организацию {self.__company}'
 
+    def __lt__(self, other):
+        """
+        <
+        :param other:
+        :return:
+        """
+        if self.__salary_from < other.__salary_from:
+            return True
+        else:
+            return False
+
+    def __le__(self, other):
+        """
+        <=
+        :param other:
+        :return:
+        """
+        if self.__salary_from <= other.__salary_from:
+            return True
+        else:
+            return False
+
+    def __gt__(self, other):
+        """
+        >
+        :param other:
+        :return:
+        """
+        if self.__salary_from > other.__salary_from:
+            return True
+        else:
+            return False
+
+    def __ge__(self, other):
+        """
+        >=
+        :param other:
+        :return:
+        """
+        if self.__salary_from >= other.__salary_from:
+            return True
+        else:
+            return False
+        
 
 vac = Vacancy('Разраб', 'http:/1.ru', '1000', '100000', 'Оч хорошая, не напряжная такая, сойдет',
               'Спать, главное при этом как можно больше работать', 'A&B')
