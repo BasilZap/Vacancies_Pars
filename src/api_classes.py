@@ -2,7 +2,6 @@ import requests
 import json
 import time
 from abc import ABC, abstractmethod
-from src.vacancy_classes import Vacancy
 
 
 # 1. Создать абстрактный класс для работы с API сайтов с вакансиями
@@ -24,7 +23,7 @@ class HeadHunterAPI(GetAPIAbstractClass):
 
     # Инициализация класса
     def __init__(self):
-        self.api_data = ''
+        self.__api_data = ''
         self.required_vacation = ''
         self.area = 113
 
@@ -41,7 +40,7 @@ class HeadHunterAPI(GetAPIAbstractClass):
         """
         self.required_vacation = vacation_name
         json_data_list = []
-        for pages in range(0, 20):
+        for pages in range(0, 1):
 
             params = {
                 'text': vacation_name,
@@ -58,39 +57,38 @@ class HeadHunterAPI(GetAPIAbstractClass):
                 break
             print(f'Загрузка страницы - {pages}')
             time.sleep(0.20)
-        self.api_data = json_data_list
-        print(self.api_data)
+        self.__api_data = json_data_list
+        # print(self.__api_data)
 
     def get_vacancies(self):
         vacation_list = []
         vacancy_counter = 0
-        if self.api_data is not None:
-            for data in self.api_data:
-                v_id = data['id']
-                name = data['name']
-                link = data['url']
+        if self.__api_data is not None:
+            for data in self.__api_data:
+                vacation_list.append(dict(id=data['id'], name=data['name'], url=data['url']))
                 if data['salary'] is None:
-                    salary_from = 0
-                    salary_to = 0
+                    vacation_list[-1]['salary_from'] = '0'
+                    vacation_list[-1]['salary_to'] = '0'
                 else:
                     if data['salary']['from'] is None:
-                        salary_from = 0
+                        vacation_list[-1]['salary_from'] = '0'
                     else:
-                        salary_from = data['salary']['from']
+                        vacation_list[-1]['salary_from'] = data['salary']['from']
                     if data['salary']['to'] is None:
-                        salary_to = 0
+                        vacation_list[-1]['salary_to'] = '0'
                     else:
-                        salary_to = data['salary']['to']
+                        vacation_list[-1]['salary_to'] = data['salary']['to']
                 if data['snippet']['requirement'] is None:
-                    description = ''
+                    vacation_list[-1]['description'] = ''
                 else:
-                    description = data['snippet']['requirement']
-                company = data['employer']['name']
-                api = 'hh.ru'
-                vacancy = Vacancy(v_id, name, link, salary_from, salary_to, description, company, api)
-                print(repr(vacancy))
+                    vacation_list[-1]['description'] = data['snippet']['requirement']
+                vacation_list[-1]['company'] = data['employer']['name']
+                vacation_list[-1]['api'] = 'hh.ru'
+                # vacancy = Vacancy(v_id, name, link, salary_from, salary_to, description, company, api)
+                # print(repr(vacancy))
                 vacancy_counter += 1
-                vacation_list.append(vacancy)
+                #vacation_list.append(vacancy)
+                #print(vacation_list[-1])
         print(f'Загружено {vacancy_counter} вакансий')
         return vacation_list
 
@@ -124,21 +122,3 @@ class SuperJobAPI(GetAPIAbstractClass):
 
     def get_vacancies(self) -> None:
         pass
-
-
-
-
-
-
-
-
-
-
-ap1 = HeadHunterAPI()
-print(ap1.find_area_id('Москва'))
-print(ap1.area)
-ap1.get_api_data('python')
-ap1.get_vacancies()
-#ap1.save_vacancies_json_file()
-#print(ap1)
-

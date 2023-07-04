@@ -6,18 +6,18 @@
 
 class Vacancy:
 
-    __slots__ = ('__v_id', '__name', '__link', '__salary_from', '__salary_to', '__description',
-                 '__company', '__api')
+    all = []
 
     def __init__(self, v_id, name, link, salary_from, salary_to, description, company, api):
-        self.__v_id = v_id
-        self.__name = name
-        self.__link = link
-        self.__salary_from = salary_from
-        self.__salary_to = salary_to
-        self.__description = description
-        self.__company = company
-        self.__api = api
+        self.v_id = v_id
+        self.name = name
+        self.link = link
+        self.salary_from = salary_from
+        self.salary_to = salary_to
+        self.description = description
+        self.company = company
+        self.api = api
+        self.all = self.all.append(self)
 
     def __repr__(self):
         """
@@ -25,17 +25,22 @@ class Vacancy:
         Вывод полной информации о вакансии
         :return: строка с данными о вакансии
         """
-        desc = self.__description
-        if len(self.__description) > 25:
-            desc = self.__description[:25] + '...'
+        desc = self.description
+        if len(self.description) > 25:
+            desc = self.description[:25] + '...'
 
-        return f"id: {self.__v_id} name: {self.__name}, link: {self.__link}, " \
-               f"salary: {self.__salary_from} - {self.__salary_to}, " \
-               f"description: {desc}, company - {self.__company}"
+        return f"id: {self.v_id}, name: {self.name}, link: {self.link}, " \
+               f"salary: {self.salary_from} - {self.salary_to}, " \
+               f"description: {desc}, company - {self.company}, api - {self.api}"
 
     def __str__(self):
-        pay = str(self.__salary_from) + '-' + str(self.__salary_to)
-        return f'Вакансия: {self.__name} с З/П: {pay} в организацию {self.__company}'
+        pay = str(self.salary_from) + '-' + str(self.salary_to)
+        return f'Вакансия: {self.name} с З/П: {pay} в организацию {self.company}'
+
+    def get_json_from_vacancy(self):
+        rec = {'id': self.v_id, 'name': self.name, 'url': self.link, 'salary_from': self.salary_from,
+               'salary_to': self.salary_to, 'description': self.description, 'company': self.company, 'api': self.api}
+        return rec
 
     def __eq__(self, other) -> bool:
 
@@ -44,7 +49,7 @@ class Vacancy:
                :param other:
                :return:
                """
-        if self.__salary_from == other.__salary_from:
+        if self.salary_from == other.salary_from:
             return True
         else:
             return False
@@ -55,7 +60,7 @@ class Vacancy:
         :param other:
         :return:
         """
-        if self.__salary_from < other.__salary_from:
+        if self.salary_from < other.salary_from:
             return True
         else:
             return False
@@ -66,7 +71,7 @@ class Vacancy:
         :param other:
         :return:
         """
-        if self.__salary_from <= other.__salary_from:
+        if self.salary_from <= other.salary_from:
             return True
         else:
             return False
@@ -77,7 +82,7 @@ class Vacancy:
         :param other:
         :return:
         """
-        if self.__salary_from > other.__salary_from:
+        if self.salary_from > other.salary_from:
             return True
         else:
             return False
@@ -88,18 +93,19 @@ class Vacancy:
         :param other:
         :return:
         """
-        if self.__salary_from >= other.__salary_from:
+        if self.salary_from >= other.salary_from:
             return True
         else:
             return False
         
 
-vac = Vacancy('123456', 'Разраб', 'http:/1.ru', '1000', '100000', 'Оч хорошая, не напряжная такая, сойдет',
-              'A&B', 'hh.ru')
-vac2 = Vacancy('123458', 'Разраб2', 'http:/1.ru', '1000', '10000', 'Оч хорошая, не напряжная такая, сойдет',
-               'A&B', 'hh.ru')
+#vac = Vacancy('123456', 'Разраб', 'http:/1.ru', '1000', '100000', 'Оч хорошая, не напряжная такая, сойдет',
+              #'A&B', 'hh.ru')
+#vac2 = Vacancy('123458', 'Разраб2', 'http:/1.ru', '1000', '10000', 'Оч хорошая, не напряжная такая, сойдет',
+               #'A&B', 'hh.ru')
 
-#print(vac2 == vac)
+#print(vac2.get_json_from_vacancy())
+#print(vac.__class__.__dict__)
 
-# print(vac)
+#print(vac)
 #print(repr(vac))
