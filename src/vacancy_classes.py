@@ -25,6 +25,14 @@ class Vacancy:
         Вывод полной информации о вакансии
         :return: строка с данными о вакансии
         """
+        #if self.salary_from in (0, '0'):
+            #salary_from_show = 'не указана'
+        #else:
+            #salary_from_show = self.salary_to
+        #if int(self.salary_to) in (0, '0'):
+            #salary_to_show = 'не указана'
+        #else:
+            #salary_to_show = self.salary_to
         desc = self.description
         if len(self.description) > 25:
             desc = self.description[:25] + '...'
@@ -99,13 +107,13 @@ class Vacancy:
             return False
         
 
-#vac = Vacancy('123456', 'Разраб', 'http:/1.ru', '1000', '100000', 'Оч хорошая, не напряжная такая, сойдет',
-              #'A&B', 'hh.ru')
-#vac2 = Vacancy('123458', 'Разраб2', 'http:/1.ru', '1000', '10000', 'Оч хорошая, не напряжная такая, сойдет',
-               #'A&B', 'hh.ru')
+# vac = Vacancy('123456', 'Разраб', 'http:/1.ru', '1000', '100000', 'Оч хорошая, не напряжная такая, сойдет',
+            # 'A&B', 'hh.ru')
+# v ac2 = Vacancy('123458', 'Разраб2', 'http:/1.ru', '1000', '10000', 'Оч хорошая, не напряжная такая, сойдет',
+            # 'A&B', 'hh.ru')
 
-#print(vac2.get_json_from_vacancy())
-#print(vac.__class__.__dict__)
+# print(vac2.get_json_from_vacancy())
+# print(vac.__class__.__dict__)
 
-#print(vac)
-#print(repr(vac))
+# print(vac)
+# print(repr(vac))

@@ -1,4 +1,5 @@
 import requests
+import os
 import json
 import time
 from abc import ABC, abstractmethod
@@ -87,8 +88,8 @@ class HeadHunterAPI(GetAPIAbstractClass):
                 # vacancy = Vacancy(v_id, name, link, salary_from, salary_to, description, company, api)
                 # print(repr(vacancy))
                 vacancy_counter += 1
-                #vacation_list.append(vacancy)
-                #print(vacation_list[-1])
+                # vacation_list.append(vacancy)
+                # print(vacation_list[-1])
         print(f'Загружено {vacancy_counter} вакансий')
         return vacation_list
 
@@ -114,11 +115,36 @@ class SuperJobAPI(GetAPIAbstractClass):
 
     # Инициализация класса
     def __init__(self):
-        self.api_data = ''
+        self.__api_data = ''
         self.required_vacation = ''
+        self.area = ''
 
     def get_api_data(self, vacation_name):
-        pass
+        self.required_vacation = vacation_name
+        json_data_list = []
+        api_key: str = os.getenv('SJ_API_SECRET_KEY')
+        param = {'X-Api-App-Id': api_key}
+        for pages in range(0, 5):
+            api_request = {
+                "keyword": 'SQL',
+                "town": "Москва",
+
+                "page": pages,
+                "count": 100}
+            recs = requests.get('https://api.superjob.ru/2.0/vacancies/',
+                                headers=param,
+                                params=api_request)
+            rec1 = json.loads(recs.content.decode())
+            json_data_list.extend(rec1['objects'])
+            print(f'Загрузка страницы - {pages}')
+            time.sleep(0.20)
+        self.__api_data = json_data_list
+        print(f'{self.__api_data} \n{len(list(self.__api_data))}')
 
     def get_vacancies(self) -> None:
         pass
+
+
+sj = SuperJobAPI()
+sj.get_api_data('SQL')
+
