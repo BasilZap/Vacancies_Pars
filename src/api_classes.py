@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 import requests
 import os
 import json
@@ -15,7 +17,7 @@ class GetAPIAbstractClass(ABC):
         pass
 
     @abstractmethod
-    def get_vacancies(self):  # Метод для получения вакансий с сайта по API
+    def get_api_vacancy_json_list(self):  # Метод для получения вакансий с сайта по API
         pass
 
 
@@ -61,7 +63,7 @@ class HeadHunterAPI(GetAPIAbstractClass):
         self.__api_data = json_data_list
         # print(self.__api_data)
 
-    def get_vacancies(self):
+    def get_api_vacancy_json_list(self) -> list:
         vacation_list = []
         vacancy_counter = 0
         if self.__api_data is not None:
@@ -90,7 +92,7 @@ class HeadHunterAPI(GetAPIAbstractClass):
                 vacancy_counter += 1
                 # vacation_list.append(vacancy)
                 # print(vacation_list[-1])
-        print(f'Загружено {vacancy_counter} вакансий')
+        print(f'Загружено {vacancy_counter} вакансий с HeadHunter.ru')
         return vacation_list
 
     def find_area_id(self, area=''):
@@ -109,6 +111,7 @@ class HeadHunterAPI(GetAPIAbstractClass):
                         break
         else:
             self.area = 113
+        print(self.area)
 
 
 class SuperJobAPI(GetAPIAbstractClass):
@@ -119,16 +122,16 @@ class SuperJobAPI(GetAPIAbstractClass):
         self.required_vacation = ''
         self.area = ''
 
-    def get_api_data(self, vacation_name):
+    def get_api_data(self, vacation_name: str) -> None:
         self.required_vacation = vacation_name
         json_data_list = []
         api_key: str = os.getenv('SJ_API_SECRET_KEY')
         param = {'X-Api-App-Id': api_key}
-        for pages in range(0, 5):
+        for pages in range(0, 1):  # "town": "Москва",
             api_request = {
                 "keyword": 'SQL',
-                "town": "Москва",
 
+                "c": "1",
                 "page": pages,
                 "count": 100}
             recs = requests.get('https://api.superjob.ru/2.0/vacancies/',
@@ -139,12 +142,38 @@ class SuperJobAPI(GetAPIAbstractClass):
             print(f'Загрузка страницы - {pages}')
             time.sleep(0.20)
         self.__api_data = json_data_list
-        print(f'{self.__api_data} \n{len(list(self.__api_data))}')
+        #print(f'{self.__api_data} \n{len(list(self.__api_data))}')
 
-    def get_vacancies(self) -> None:
-        pass
+    def get_api_vacancy_json_list(self) -> list:
+        vacation_list = []
+        vacancy_counter = 0
+        if self.__api_data is not None:
+            for data in self.__api_data:
+                vacation_list.append(
+                    {"id": str(data['id']),
+                     "name": data['profession'],
+                     "url": data['link'],
+                     "salary_from": data['payment_from'],
+                     "salary_to": data['payment_to'],
+                     "description": data['candidat'],
+                     "company": data['firm_name'],
+                     "api": "SuperJob.ru"})
+
+                # vacancy = Vacancy(v_id, name, link, salary_from, salary_to, description, company, api)
+                # print(repr(vacancy))
+                vacancy_counter += 1
+                # vacation_list.append(vacancy)
+                # print(vacation_list[-1])
+        print(f'Загружено {vacancy_counter} вакансий с SuperJob.ru')
+        return vacation_list
 
 
-sj = SuperJobAPI()
-sj.get_api_data('SQL')
 
+#hh = HeadHunterAPI()
+
+#print(hh.get_api_data('SQL'))
+#print(hh.area)
+#print(hh.get_api_vacancy_json_list())
+#sj = SuperJobAPI()
+#sj.get_api_data('SQL')
+#print(sj.get_api_vacancy_json_list())
