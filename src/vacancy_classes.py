@@ -25,20 +25,20 @@ class Vacancy:
         Вывод полной информации о вакансии
         :return: строка с данными о вакансии
         """
-        #if self.salary_from in (0, '0'):
-            #salary_from_show = 'не указана'
-        #else:
-            #salary_from_show = self.salary_to
-        #if int(self.salary_to) in (0, '0'):
-            #salary_to_show = 'не указана'
-        #else:
-            #salary_to_show = self.salary_to
+        if self.salary_from == '0':
+            salary_from_show = 'не указана'
+        else:
+            salary_from_show = self.salary_from
+        if self.salary_to == '0':
+            salary_to_show = 'не указана'
+        else:
+            salary_to_show = self.salary_to
         desc = self.description
         if len(self.description) > 25:
             desc = self.description[:25] + '...'
 
         return f"id: {self.v_id}, name: {self.name}, link: {self.link}, " \
-               f"salary: {self.salary_from} - {self.salary_to}, " \
+               f"salary: {salary_from_show} - {salary_to_show}, " \
                f"description: {desc}, company - {self.company}, api - {self.api}"
 
     def __str__(self):

@@ -76,11 +76,11 @@ class HeadHunterAPI(GetAPIAbstractClass):
                     if data['salary']['from'] is None:
                         vacation_list[-1]['salary_from'] = '0'
                     else:
-                        vacation_list[-1]['salary_from'] = data['salary']['from']
+                        vacation_list[-1]['salary_from'] = str(data['salary']['from'])
                     if data['salary']['to'] is None:
                         vacation_list[-1]['salary_to'] = '0'
                     else:
-                        vacation_list[-1]['salary_to'] = data['salary']['to']
+                        vacation_list[-1]['salary_to'] = str(data['salary']['to'])
                 if data['snippet']['requirement'] is None:
                     vacation_list[-1]['description'] = ''
                 else:
