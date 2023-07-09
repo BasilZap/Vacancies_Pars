@@ -1,8 +1,3 @@
-# 3. Создать класс для работы с вакансиями, определить атрибуты:
-#       - название вакансии
-#       - ссылка на вакансию
-#       - зарплата
-#       - краткое описание/требования
 
 class Vacancy:
 
@@ -19,46 +14,47 @@ class Vacancy:
         self.api = api
         self.all = self.all.append(self)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Переопределение метода repr
         Вывод полной информации о вакансии
         :return: строка с данными о вакансии
         """
-        if self.salary_from == '0':
+        if self.salary_from == '0':     # Вместо минимальной з/п = 0, выводим пользователю - не указана
             salary_from_show = 'не указана'
         else:
             salary_from_show = self.salary_from
-        if self.salary_to == '0':
+        if self.salary_to == '0':       # Вместо максимальной з/п = 0, выводим пользователю - не указана
             salary_to_show = 'не указана'
         else:
             salary_to_show = self.salary_to
         desc = self.description
-        if len(self.description) > 25:
+        if len(self.description) > 25:  # Сокращаем описание вакансии до 25 символов для вывода
             desc = self.description[:25] + '...'
 
         return f"id: {self.v_id}, name: {self.name}, link: {self.link}, " \
                f"salary: {salary_from_show} - {salary_to_show}, " \
                f"description: {desc}, company - {self.company}, api - {self.api}"
 
+    # Переопределение метода __str__ для Vacancy
     def __str__(self):
         pay = str(self.salary_from) + '-' + str(self.salary_to)
         return f'Вакансия: {self.name} с З/П: {pay} в организацию {self.company}'
 
     def __eq__(self, other) -> bool:
         """
-               =
-               :param other:
-               :return:
-               """
+        Переопределение метода сравнения == для экземпляров класса Vacancy
+        :param other:
+        :return:
+        """
         if self.salary_from == other.salary_from:
             return True
         else:
             return False
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         """
-        <
+        Переопределение метода сравнения < для экземпляров класса Vacancy
         :param other:
         :return:
         """
@@ -67,9 +63,9 @@ class Vacancy:
         else:
             return False
 
-    def __le__(self, other):
+    def __le__(self, other) -> bool:
         """
-        <=
+        Переопределение метода сравнения <= для экземпляров класса Vacancy
         :param other:
         :return:
         """
@@ -78,9 +74,9 @@ class Vacancy:
         else:
             return False
 
-    def __gt__(self, other):
+    def __gt__(self, other) -> bool:
         """
-        >
+        Переопределение метода сравнения > для экземпляров класса Vacancy
         :param other:
         :return:
         """
@@ -89,9 +85,9 @@ class Vacancy:
         else:
             return False
 
-    def __ge__(self, other):
+    def __ge__(self, other) -> bool:
         """
-        >=
+        Переопределение метода сравнения >= для экземпляров класса Vacancy
         :param other:
         :return:
         """
@@ -101,7 +97,7 @@ class Vacancy:
             return False
 
     @classmethod
-    def get_json_from_vacancy(cls):
+    def get_json_from_vacancy(cls) -> list:
         """
         Класс-метод выгружает данные из экземпляров класса
         Vacancy в формат json
@@ -116,12 +112,12 @@ class Vacancy:
         return vacancies_data
 
     @classmethod
-    def delete_vacancy(cls, element_id):
+    def delete_vacancy(cls, element_id: str) -> None:
         """
         Класс-метод поиска и удаления экземпляра класса Vacancy
         по id вакансии
         :param element_id: id эл-та, который необходимо удалить, str
-        :return:
+        :return: None
         """
         length_of_list = len(cls.all)
         for vacancy in range(len(cls.all)-1):
@@ -131,7 +127,6 @@ class Vacancy:
                 break
         if length_of_list == len(cls.all):
             print('Запись с таким ID не найдена')
-
 
     @classmethod
     def get_vacancies(cls, vacancies_data) -> None:
@@ -144,9 +139,13 @@ class Vacancy:
             cls(it['id'], it['name'], it['url'], it['salary_from'], it['salary_to'], it['description'],
                 it['company'], it['api'])
 
-
     @classmethod
-    def show_n_vacancies(cls, number_to_show=100000):
+    def show_n_vacancies(cls, number_to_show=100000) -> None:
+        """
+        Класс-метод вывода заданного количества вакансий
+        :param number_to_show: Количество для вывода вакансий - int, (по умолчанию некоторое максимально большое число)
+        :return:
+        """
         if number_to_show == 100000:
             number_to_show = len(cls.all)-1
         else:
@@ -157,15 +156,32 @@ class Vacancy:
             print(repr(cls.all[numbers]))
 
     @classmethod
-    def add_vacancy(cls, v_id, name, link, salary_from, salary_to, description, company, api="user"):
+    def add_vacancy(cls, v_id, name, link, salary_from, salary_to, description, company, api="user") -> None:
+        """
+        Класс-метод для добавления вакансии пользователем
+        :param v_id: ID вакансии
+        :param name: название вакансии
+        :param link: ссылка на вакансию
+        :param salary_from: начальная зарплата
+        :param salary_to: максимальная зарплата
+        :param description: описание вакансии
+        :param company: название компании
+        :param api: по умолчанию 'user'
+        :return: Добавляет экземпляр вакансии в контейнер all класса Vacancy
+        """
         cls.all.append(cls(v_id, name, link, salary_from, salary_to, description, company, api))
 
     @staticmethod
-    def vacancy_data_splitter(hh_data: list, sj_data: list):
+    def vacancy_data_splitter(hh_data: list, sj_data: list) -> list:
+        """
+        Класс-метод, для создания общего json списка вакансий с HeadHunter и SuperJob
+        :param hh_data: Список вакансий HeadHunter
+        :param sj_data: Список вакансий SuperJob
+        :return: объединенный список вакансий
+        """
         all_vacancies = hh_data
         all_vacancies.extend(sj_data)
         return all_vacancies
-
 
     @staticmethod
     def get_vacancy_by_salary(vacancies_data):
@@ -177,15 +193,3 @@ class Vacancy:
         vacancies = sorted(vacancies_data, key=lambda vacancy: int(vacancy['salary_from']), reverse=True)
         return vacancies
 
-#vac = Vacancy('123456', 'Разраб', 'http:/1.ru', '1000', '100000', 'Оч хорошая, не напряжная такая, сойдет',
-              #'A&B', 'hh.ru')
-#vac2 = Vacancy('123458', 'Разраб2', 'http:/1.ru', '1000', '10000', 'Оч хорошая, не напряжная такая, сойдет',
-              #'A&B', 'hh.ru')
-
-#print(Vacancy.get_json_from_vacancy())
-#Vacancy.delete_vacancy('123456')
-#print(Vacancy.get_json_from_vacancy())
-# print(vac.__class__.__dict__)
-
-# print(vac)
-# print(repr(vac))
