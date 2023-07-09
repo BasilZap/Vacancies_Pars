@@ -14,10 +14,20 @@ class GetAPIAbstractClass(ABC):
 
     @abstractmethod
     def get_api_data(self, vacation_name):
+        """
+        Абстрактный метод запроса к api платформы
+        :param vacation_name: Название вакансии для поиска
+        :return: None
+        """
         pass
 
     @abstractmethod
-    def get_api_vacancy_json_list(self):  # Метод для получения вакансий с сайта по API
+    def get_api_vacancy_json_list(self):
+        """
+        Абстрактный метод для конвертации данных полученных от API
+        в формат json
+        :return: list json
+        """
         pass
 
 
@@ -43,8 +53,8 @@ class HeadHunterAPI(GetAPIAbstractClass):
         """
         self.required_vacation = vacation_name
         json_data_list = []
-        for pages in range(0, 1):
 
+        for pages in range(0, 20):  # Читаем в цикле все страницы данных по вакансиям
             params = {
                 'text': vacation_name,
                 'host': 'hh.ru',
@@ -53,23 +63,28 @@ class HeadHunterAPI(GetAPIAbstractClass):
                 'page': pages,
                 'per_page': 100
             }
-            recs = requests.get("https://api.hh.ru/vacancies", params)
-            rec1 = json.loads(recs.content.decode())
-            json_data_list.extend(rec1['items'])
-            if (rec1['pages'] - pages) <= 1:
+            recs = requests.get("https://api.hh.ru/vacancies", params)  # Запрос к API
+            json_record = json.loads(recs.content.decode())    # Приводим полученные данные к формату json
+            json_data_list.extend(json_record['items'])    # Добавляем данные каждой страницы в общий список
+            if (json_record['pages'] - pages) <= 1:    # Если страниц меньше 20, дочитываем последнюю и прерываем цикл
                 break
             print(f'Загрузка страницы - {pages}')
-            time.sleep(0.20)
+            time.sleep(0.20)    # Задержка на запрос, чтобы не загружать сервер HH
         self.__api_data = json_data_list
-        # print(self.__api_data)
 
     def get_api_vacancy_json_list(self) -> list:
+        """
+        Метод для конвертации данных полученных от API HH
+        Приведение формата полученных данных к единому стандарту
+        :return:
+        """
         vacation_list = []
-        vacancy_counter = 0
-        if self.__api_data is not None:
+        vacancy_counter = 0     # счетчик вакансий для вывода
+
+        if self.__api_data is not None:     # Проверка, если есть данные, создаем список json для дальнейшей работы
             for data in self.__api_data:
                 vacation_list.append(dict(id=data['id'], name=data['name'], url=data['url']))
-                if data['salary'] is None:
+                if data['salary'] is None:      # Подготовка данных по з\п, если данных нет - заполоняем
                     vacation_list[-1]['salary_from'] = '0'
                     vacation_list[-1]['salary_to'] = '0'
                 else:
@@ -85,23 +100,28 @@ class HeadHunterAPI(GetAPIAbstractClass):
                     vacation_list[-1]['description'] = ''
                 else:
                     vacation_list[-1]['description'] = data['snippet']['requirement']
+
                 vacation_list[-1]['company'] = data['employer']['name']
                 vacation_list[-1]['api'] = 'hh.ru'
-                # vacancy = Vacancy(v_id, name, link, salary_from, salary_to, description, company, api)
-                # print(repr(vacancy))
                 vacancy_counter += 1
-                # vacation_list.append(vacancy)
-                # print(vacation_list[-1])
+        else:
+            print('Нет данных от HeadHunter API')
         print(f'Загружено {vacancy_counter} вакансий с HeadHunter.ru')
         return vacation_list
 
-    def find_area_id(self, area=''):
-        rec = requests.get("https://api.hh.ru/areas/113")
+    def find_area_id(self, area='') -> None:
+        """
+        Дополнительная функция для получения библиотеки городов с HH.ru
+        и поиска ID города
+        :param area: Название города -> str
+        :return: None
+        """
+        rec = requests.get("https://api.hh.ru/areas/113")  # Запрашиваем словарь городов/областей
         rec1 = json.loads(rec.content.decode())
-        # print(rec1)
         if area not in ('', 'Россия'):
             my_str: str = area
-            for i in rec1['areas']:
+
+            for i in rec1['areas']:     # Обход дерева регионов, поиск и вывод ID по названию города
                 if i['name'] == str(my_str):
                     self.area = i['id']
                     break
@@ -109,9 +129,9 @@ class HeadHunterAPI(GetAPIAbstractClass):
                     if y['name'] == str(my_str):
                         self.area = y['id']
                         break
+
         else:
-            self.area = 113
-        print(self.area)
+            self.area = 113     # Значение ID по умолчанию - 113(Россия)
 
 
 class SuperJobAPI(GetAPIAbstractClass):
@@ -123,28 +143,41 @@ class SuperJobAPI(GetAPIAbstractClass):
         self.area = ''
 
     def get_api_data(self, vacation_name: str) -> None:
-        self.required_vacation = vacation_name
+        """
+        Получение данных с сайта SuperJob по API с запросом
+        по вакансии - vacation_name, считываем максимальное
+        количество страниц и собираем их в список json_data_list
+        :param vacation_name:
+        :return: None
+        """
+        if self.area.lower() in ('', 'россия'):     # Проверка, если место поиска не указано или указана страна
+            user_request = {"keyword": vacation_name, "c": "1"}     # Указываем страну
+        else:
+            user_request = {"keyword": vacation_name, "town": self.area}    # в противном случае - город
         json_data_list = []
         api_key: str = os.getenv('SJ_API_SECRET_KEY')
         param = {'X-Api-App-Id': api_key}
-        for pages in range(0, 1):  # "town": "Москва",
-            api_request = {
-                "keyword": 'SQL',
 
-                "c": "1",
-                "page": pages,
-                "count": 100}
+        for pages in range(0, 5):       # Читаем в цикле все страницы данных по вакансиям
+            request_data = {"page": pages, "count": 100}
+            api_request = {**user_request, **request_data}  # Формируем запрос к api
+            print(api_request)
             recs = requests.get('https://api.superjob.ru/2.0/vacancies/',
                                 headers=param,
                                 params=api_request)
-            rec1 = json.loads(recs.content.decode())
-            json_data_list.extend(rec1['objects'])
+
+            json_record = json.loads(recs.content.decode())    # Приводим полученные данные к формату json
+            json_data_list.extend(json_record['objects'])  # Добавляем данные каждой страницы в общий список
             print(f'Загрузка страницы - {pages}')
-            time.sleep(0.20)
+            time.sleep(0.20)    # Задержка на запрос, чтобы не загружать сервер
         self.__api_data = json_data_list
-        #print(f'{self.__api_data} \n{len(list(self.__api_data))}')
 
     def get_api_vacancy_json_list(self) -> list:
+        """
+        Метод для конвертации данных полученных от API SJ
+        Приведение формата полученных данных к единому стандарту
+        :return:
+        """
         vacation_list = []
         vacancy_counter = 0
         if self.__api_data is not None:
@@ -159,21 +192,9 @@ class SuperJobAPI(GetAPIAbstractClass):
                      "company": data['firm_name'],
                      "api": "SuperJob.ru"})
 
-                # vacancy = Vacancy(v_id, name, link, salary_from, salary_to, description, company, api)
-                # print(repr(vacancy))
                 vacancy_counter += 1
-                # vacation_list.append(vacancy)
-                # print(vacation_list[-1])
+        else:
+            print('Нет данных от SuperJob API')
         print(f'Загружено {vacancy_counter} вакансий с SuperJob.ru')
         return vacation_list
 
-
-
-#hh = HeadHunterAPI()
-
-#print(hh.get_api_data('SQL'))
-#print(hh.area)
-#print(hh.get_api_vacancy_json_list())
-#sj = SuperJobAPI()
-#sj.get_api_data('SQL')
-#print(sj.get_api_vacancy_json_list())
