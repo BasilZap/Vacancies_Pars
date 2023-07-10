@@ -1,7 +1,7 @@
 
 class Vacancy:
 
-    all = []
+    all = []    # Контейнер для экземпляров класса
 
     def __init__(self, v_id, name, link, salary_from, salary_to, description, company, api):
         self.v_id = v_id
@@ -147,11 +147,11 @@ class Vacancy:
         :return:
         """
         if number_to_show == 100000:
-            number_to_show = len(cls.all)-1
+            number_to_show = len(cls.all)
         else:
-            if number_to_show > len(cls.all)-1:
+            if number_to_show > len(cls.all):
                 print(f"В списке только {len(cls.all)}")
-                number_to_show = len(cls.all) - 1
+                number_to_show = len(cls.all)
         for numbers in range(number_to_show):
             print(repr(cls.all[numbers]))
 
@@ -186,10 +186,27 @@ class Vacancy:
     @staticmethod
     def get_vacancy_by_salary(vacancies_data):
         """
-        Функция сортировки данных вакансий по убыванию начальной з\п
+        Функция сортировки данных вакансий по убыванию начальной з|п
         :param vacancies_data: Список вакансий json
         :return: Список отсортированных вакансий json
         """
         vacancies = sorted(vacancies_data, key=lambda vacancy: int(vacancy['salary_from']), reverse=True)
         return vacancies
 
+    @classmethod
+    def search_additional_words(cls, word: str) -> None:
+        """
+        Класс-метод вывода вакансий, которые содержат в названии
+        или описании заданное слово или фразу
+        :param word: Слово для поиска (str)
+        :return: None
+        """
+        vacancy_counter = 0
+        for vacancy in cls.all:
+            if word in vacancy.name or word in vacancy.description:
+                print(repr(vacancy))
+                vacancy_counter += 1
+        if vacancy_counter != 0:
+            print(f'Количество найденных вакансий = {vacancy_counter}')
+        else:
+            print(f'Вакансий по данному запросу не найдено')
