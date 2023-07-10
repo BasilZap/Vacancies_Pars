@@ -51,8 +51,12 @@ class JSONSaver(JsonAbstract):
         :param vacancy_filename: название файла
         :return:
         """
-        with open(vacancy_filename, 'r', encoding='utf-8') as file:  # Открытие файла на чтение
-            vacancies_data = json.load(file)    # Чтение данных из файла
-            print(f'Загружено {len(list(vacancies_data))} вакансий из файла {vacancy_filename}')    # Сообщение
-            self.vacancies = vacancies_data
-        file.close()    # Закрытие файла
+        try:
+            with open(vacancy_filename, 'r', encoding='utf-8') as file:  # Открытие файла на чтение
+                vacancies_data = json.load(file)    # Чтение данных из файла
+                print(f'Загружено {len(list(vacancies_data))} вакансий из файла {vacancy_filename}')    # Сообщение
+                self.vacancies = vacancies_data
+            file.close()    # Закрытие файла
+        except FileNotFoundError:
+            print(f"Файл {vacancy_filename} не найден")
+
