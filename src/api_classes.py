@@ -7,8 +7,14 @@ import time
 from abc import ABC, abstractmethod
 
 
-# 1. Создать абстрактный класс для работы с API сайтов с вакансиями
-# 2. Реализовать классы, наследующиеся от абстрактного класса, для работы с конкретными платформами
+class GetAPIDataError(Exception):
+
+    def __init__(self):
+        self.message = "GetAPIDataError: Ошибка получения данных от API"
+
+    def __str__(self):
+        return self.message
+
 
 class GetAPIAbstractClass(ABC):
 
@@ -53,23 +59,27 @@ class HeadHunterAPI(GetAPIAbstractClass):
         """
         self.required_vacation = vacation_name
         json_data_list = []
-
-        for pages in range(0, 20):  # Читаем в цикле все страницы данных по вакансиям
-            params = {
-                'text': vacation_name,
-                'host': 'hh.ru',
-                'locale': 'RU',
-                'area': self.area,
-                'page': pages,
-                'per_page': 100
-            }
-            recs = requests.get("https://api.hh.ru/vacancies", params)  # Запрос к API
-            json_record = json.loads(recs.content.decode())    # Приводим полученные данные к формату json
-            json_data_list.extend(json_record['items'])    # Добавляем данные каждой страницы в общий список
-            if (json_record['pages'] - pages) <= 1:    # Если страниц меньше 20, дочитываем последнюю и прерываем цикл
-                break
-            print(f'Загрузка страницы - {pages}')
-            time.sleep(0.20)    # Задержка на запрос, чтобы не загружать сервер HH
+        try:
+            for pages in range(0, 20):  # Читаем в цикле все страницы данных по вакансиям
+                params = {
+                    'text': vacation_name,
+                    'host': 'hh.ru',
+                    'locale': 'RU',
+                    'area': self.area,
+                    'page': pages,
+                    'per_page': 100
+                }
+                recs = requests.get("https://api.hh.ru/vacancies", params)  # Запрос к API
+                if recs.status_code != 200:
+                    raise GetAPIDataError
+                json_record = json.loads(recs.content.decode())    # Приводим полученные данные к формату json
+                json_data_list.extend(json_record['items'])    # Добавляем данные каждой страницы в общий список
+                if (json_record['pages'] - pages) <= 1:  # Если страниц меньше 20, дочитываем последнюю и прерываем цикл
+                    break
+                print(f'Загрузка страницы - {pages}')
+                time.sleep(0.20)    # Задержка на запрос, чтобы не загружать сервер HH
+        except GetAPIDataError:
+            print(GetAPIDataError())
         self.__api_data = json_data_list
 
     def get_api_vacancy_json_list(self) -> list:
@@ -116,22 +126,27 @@ class HeadHunterAPI(GetAPIAbstractClass):
         :param area: Название города -> str
         :return: None
         """
-        rec = requests.get("https://api.hh.ru/areas/113")  # Запрашиваем словарь городов/областей
-        rec1 = json.loads(rec.content.decode())
-        if area not in ('', 'Россия'):
-            my_str: str = area
+        try:
+            rec = requests.get("https://api.hh.ru/areas/113")  # Запрашиваем словарь городов/областей
+            if rec.status_code != 200:
+                raise GetAPIDataError
+            json_data = json.loads(rec.content.decode())
+            if area not in ('', 'Россия'):
+                my_str: str = area
 
-            for i in rec1['areas']:     # Обход дерева регионов, поиск и вывод ID по названию города
-                if i['name'] == str(my_str):
-                    self.area = i['id']
-                    break
-                for y in i['areas']:
-                    if y['name'] == str(my_str):
-                        self.area = y['id']
+                for i in json_data['areas']:     # Обход дерева регионов, поиск и вывод ID по названию города
+                    if i['name'] == str(my_str):
+                        self.area = i['id']
                         break
+                    for y in i['areas']:
+                        if y['name'] == str(my_str):
+                            self.area = y['id']
+                            break
 
-        else:
-            self.area = 113     # Значение ID по умолчанию - 113(Россия)
+            else:
+                self.area = 113     # Значение ID по умолчанию - 113(Россия)
+        except GetAPIDataError:
+            print(GetAPIDataError())
 
 
 class SuperJobAPI(GetAPIAbstractClass):
@@ -158,18 +173,21 @@ class SuperJobAPI(GetAPIAbstractClass):
         api_key: str = os.getenv('SJ_API_SECRET_KEY')
         param = {'X-Api-App-Id': api_key}
 
-        for pages in range(0, 5):       # Читаем в цикле все страницы данных по вакансиям
-            request_data = {"page": pages, "count": 100}
-            api_request = {**user_request, **request_data}  # Формируем запрос к api
-            print(api_request)
-            recs = requests.get('https://api.superjob.ru/2.0/vacancies/',
-                                headers=param,
-                                params=api_request)
-
-            json_record = json.loads(recs.content.decode())    # Приводим полученные данные к формату json
-            json_data_list.extend(json_record['objects'])  # Добавляем данные каждой страницы в общий список
-            print(f'Загрузка страницы - {pages}')
-            time.sleep(0.20)    # Задержка на запрос, чтобы не загружать сервер
+        try:
+            for pages in range(0, 5):       # Читаем в цикле все страницы данных по вакансиям
+                request_data = {"page": pages, "count": 100}
+                api_request = {**user_request, **request_data}  # Формируем запрос к api
+                recs = requests.get('https://api.superjob.ru/2.0/vacancies/',
+                                    headers=param,
+                                    params=api_request)
+                if recs.status_code != 200:
+                    raise GetAPIDataError
+                json_record = json.loads(recs.content.decode())    # Приводим полученные данные к формату json
+                json_data_list.extend(json_record['objects'])  # Добавляем данные каждой страницы в общий список
+                print(f'Загрузка страницы - {pages}')
+                time.sleep(0.20)    # Задержка на запрос, чтобы не загружать сервер
+        except GetAPIDataError:
+            print(GetAPIDataError())
         self.__api_data = json_data_list
 
     def get_api_vacancy_json_list(self) -> list:
@@ -186,8 +204,8 @@ class SuperJobAPI(GetAPIAbstractClass):
                     {"id": str(data['id']),
                      "name": data['profession'],
                      "url": data['link'],
-                     "salary_from": data['payment_from'],
-                     "salary_to": data['payment_to'],
+                     "salary_from": str(data['payment_from']),
+                     "salary_to": str(data['payment_to']),
                      "description": data['candidat'],
                      "company": data['firm_name'],
                      "api": "SuperJob.ru"})
